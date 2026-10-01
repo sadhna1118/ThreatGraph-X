@@ -80,7 +80,61 @@ class Neo4jClient:
 
     async def get_neighborhood(self, node_id: str, depth: int = 1, max_nodes: int = 100) -> SubGraph:
         """Fetches k-hop neighborhood from graph."""
-        return in_memory_graph.get_neighborhood(node_id, depth=depth, max_nodes=max_nodes)
+        if self.use_in_memory or not self.driver:
+            return in_memory_graph.get_neighborhood(node_id, depth=depth, max_nodes=max_nodes)
+            
+        query = f"""
+        MATCH (n {{id: $node_id}})
+        OPTIONAL MATCH path = (n)-[*1..{depth}]-(m)
+        WITH collect(distinct n) + collect(distinct m) as nodes, collect(path) as paths
+        UNWIND nodes as node
+        WITH node, paths WHERE node IS NOT NULL
+        WITH collect(distinct node) as final_nodes, paths
+        UNWIND (CASE paths WHEN [] THEN [null] ELSE paths END) as p
+        UNWIND (CASE p WHEN null THEN [] ELSE relationships(p) END) as rel
+        RETURN final_nodes as nodes, collect(distinct rel) as edges
+        """
+        try:
+            async with self.driver.session() as session:
+                result = await session.run(query, node_id=node_id)
+                record = await result.single()
+                
+                nodes_list = []
+                edges_list = []
+                
+                if record:
+                    neo_nodes = record.get("nodes", [])
+                    neo_edges = record.get("edges", [])
+                    
+                    for n in neo_nodes[:max_nodes]:
+                        if n is not None:
+                            labels = list(n.labels)
+                            label = labels[0] if labels else "Entity"
+                            n_id = n.get("id", "unknown")
+                            props = dict(n.items())
+                            nodes_list.append(GraphNode(id=n_id, label=label, properties=props))
+                            
+                    for r in neo_edges:
+                        if r is not None:
+                            try:
+                                src_id = r.nodes[0].get("id", "unknown")
+                                tgt_id = r.nodes[1].get("id", "unknown")
+                            except Exception:
+                                src_id = "unknown"
+                                tgt_id = "unknown"
+                                
+                            edges_list.append(GraphEdge(
+                                id=f"rel:{src_id}->{tgt_id}:{r.type}",
+                                source=src_id,
+                                target=tgt_id,
+                                relation_type=r.type,
+                                properties=dict(r.items())
+                            ))
+                            
+                return SubGraph(nodes=nodes_list, edges=edges_list)
+        except Exception as e:
+            logger.error(f"Error querying Neo4j neighborhood: {e}")
+            return in_memory_graph.get_neighborhood(node_id, depth=depth, max_nodes=max_nodes)
 
 
 neo4j_client = Neo4jClient()
