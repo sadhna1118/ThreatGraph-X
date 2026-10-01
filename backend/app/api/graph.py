@@ -3,6 +3,7 @@ from typing import Optional, Dict, Any
 
 from app.schemas.graph import SubGraph, AttackPath
 from app.graph.in_memory_graph import in_memory_graph
+from app.graph.neo4j_client import neo4j_client
 from app.graph.graph_algorithms import graph_algorithms
 
 router = APIRouter(prefix="/graph", tags=["Graph Explorer"])
@@ -15,7 +16,7 @@ async def get_graph_neighborhood(
     max_nodes: int = Query(100, ge=10, le=500)
 ):
     """Retrieves subgraph neighborhood centered at a designated entity."""
-    return in_memory_graph.get_neighborhood(node_id, depth=depth, max_nodes=max_nodes)
+    return await neo4j_client.get_neighborhood(node_id, depth=depth, max_nodes=max_nodes)
 
 
 @router.get("/path", response_model=AttackPath)
