@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api"
 
     # Application Security & RBAC
-    JWT_SECRET: str = "threatgraph-x-dev-super-secure-secret-key-32-chars-min!"
+    JWT_SECRET: str = "placeholder_jwt_secret_change_in_production"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_MINUTES: int = 480
     CORS_ORIGINS: Union[str, List[str]] = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173"
@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # Graph Database Settings
     NEO4J_URI: str = "bolt://localhost:7687"
     NEO4J_USERNAME: str = "neo4j"
-    NEO4J_PASSWORD: str = "threatgraph_password"
+    NEO4J_PASSWORD: str = "placeholder_neo4j_password_change_in_production"
     USE_IN_MEMORY_GRAPH: bool = True
 
     # Cache & Queues

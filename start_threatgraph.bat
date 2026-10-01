@@ -26,6 +26,6 @@ echo ========================================================
 echo  ThreatGraph X is now LIVE!
 echo  Frontend UI:   http://localhost:5173/
 echo  Backend Docs:  http://127.0.0.1:8000/docs
-echo  Credentials:   admin / AdminPass123!
+echo  Credentials:   See your .env file or database configuration
 echo ========================================================
 pause

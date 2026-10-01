@@ -10,6 +10,11 @@ from datetime import datetime, timezone, timedelta
 import argparse
 import sys
 import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
+except ImportError:
+    pass
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
@@ -39,10 +44,10 @@ async def seed_database(target_events_count: int = 20000):
     async with AsyncSessionLocal() as session:
         print(f"[*] Seeding Default Users & RBAC Roles...")
         default_users = [
-            ("admin", "admin@threatgraph.local", "AdminPass123!", "ADMIN"),
-            ("hunter", "hunter@threatgraph.local", "HunterPass123!", "THREAT_HUNTER"),
-            ("analyst", "analyst@threatgraph.local", "AnalystPass123!", "SOC_ANALYST"),
-            ("viewer", "viewer@threatgraph.local", "ViewerPass123!", "VIEWER"),
+            ("admin", "admin@threatgraph.local", os.environ.get("SEED_ADMIN_PASSWORD", "changeme_admin"), "ADMIN"),
+            ("hunter", "hunter@threatgraph.local", os.environ.get("SEED_HUNTER_PASSWORD", "changeme_hunter"), "THREAT_HUNTER"),
+            ("analyst", "analyst@threatgraph.local", os.environ.get("SEED_ANALYST_PASSWORD", "changeme_analyst"), "SOC_ANALYST"),
+            ("viewer", "viewer@threatgraph.local", os.environ.get("SEED_VIEWER_PASSWORD", "changeme_viewer"), "VIEWER"),
         ]
         for uname, uemail, upass, urole in default_users:
             user = User(

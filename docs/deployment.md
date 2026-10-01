@@ -21,7 +21,7 @@ docker compose exec backend python scripts/seed.py --events 20000
 # 5. Access UI
 # Web UI: http://localhost:3000
 # API Docs: http://localhost:8000/docs
-# Neo4j Browser: http://localhost:7474 (neo4j / threatgraph_password)
+# Neo4j Browser: http://localhost:7474 (neo4j / <YOUR_NEO4J_PASSWORD>)
 ```
 
 ## 3. Local Standalone Development (Zero-Dependency Mode)

@@ -15,7 +15,8 @@ import {
   Activity,
   Database,
   ShieldAlert,
-  Radio
+  Radio,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 const navItems = [
@@ -34,6 +35,7 @@ const navItems = [
   { to: '/iocs', label: 'Threat Intel (IOCs)', icon: Database },
   { to: '/behavior', label: 'Behavior Baselines', icon: Activity },
   { to: '/reports', label: 'Reports Vault', icon: FileText },
+  { to: '/settings', label: 'Platform Settings', icon: SettingsIcon },
 ];
 
 
