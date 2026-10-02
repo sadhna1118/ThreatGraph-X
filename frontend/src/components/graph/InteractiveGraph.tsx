@@ -28,7 +28,11 @@ export const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
   }, [selectedNodeId, subgraph]);
 
   // Node Colors by Entity Type
-  const getNodeColor = (label: string) => {
+  const getNodeColor = (nodeId: string, label: string) => {
+    if (nodeId.toLowerCase().includes('hacker') || nodeId.toLowerCase().includes('malicious') || nodeId.toLowerCase().includes('attacker')) {
+      return { bg: 'bg-red-500/30', border: 'border-red-500', text: 'text-red-400', icon: ShieldAlert };
+    }
+    
     switch (label.toLowerCase()) {
       case 'user':
         return { bg: 'bg-indigo-500/20', border: 'border-indigo-500', text: 'text-indigo-400', icon: User };
@@ -62,19 +66,40 @@ export const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
     };
   });
 
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+    setZoom(z => Math.max(0.2, Math.min(5, z * zoomFactor)));
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
   return (
     <div className="relative w-full rounded-2xl bg-[#080c16] border border-slate-800 overflow-hidden" style={{ height }}>
       {/* Control Overlay */}
       <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 p-1.5 rounded-xl bg-slate-900/90 border border-slate-800 backdrop-blur-md">
         <button
-          onClick={() => setZoom(z => Math.min(2, z + 0.15))}
+          onClick={() => setZoom(z => Math.min(5, z + 0.25))}
           className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
           title="Zoom In"
         >
           <ZoomIn className="w-4 h-4" />
         </button>
         <button
-          onClick={() => setZoom(z => Math.max(0.5, z - 0.15))}
+          onClick={() => setZoom(z => Math.max(0.2, z - 0.25))}
           className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
           title="Zoom Out"
         >
@@ -96,12 +121,20 @@ export const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
       </div>
 
       {/* SVG Canvas for Directed Graph */}
-      <div className="w-full h-full cursor-grab active:cursor-grabbing flex items-center justify-center">
+      <div 
+        className="w-full h-full flex items-center justify-center"
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+      >
         <svg
           className="w-full h-full"
           viewBox="0 0 760 480"
           style={{
-            transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+            transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
             transformOrigin: 'center center'
           }}
         >
@@ -159,7 +192,7 @@ export const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
             const pos = nodePositions[node.id];
             if (!pos) return null;
             const isSelected = selectedNode?.id === node.id;
-            const color = getNodeColor(node.label);
+            const color = getNodeColor(node.id, node.label);
 
             return (
               <g

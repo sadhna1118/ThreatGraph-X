@@ -21,34 +21,33 @@ async def lifespan(app: FastAPI):
     await init_db()
     
     # Load existing entity graph into in-memory graph engine
-    if settings.USE_IN_MEMORY_GRAPH:
-        try:
-            from app.database.database import AsyncSessionLocal
-            from app.models.entity import Entity, EntityRelationship
-            from app.graph.in_memory_graph import in_memory_graph
-            from sqlalchemy import select
-            
-            async with AsyncSessionLocal() as session:
-                ents = (await session.execute(select(Entity))).scalars().all()
-                for e in ents:
-                    in_memory_graph.add_or_update_node(
-                        node_id=e.id,
-                        label=e.entity_type.capitalize(),
-                        properties={"value": e.value, "type": e.entity_type, "risk_score": e.risk_score}
-                    )
-                rels = (await session.execute(select(EntityRelationship))).scalars().all()
-                for r in rels:
-                    in_memory_graph.add_or_update_edge(
-                        source_id=r.source_entity_id,
-                        target_id=r.target_entity_id,
-                        relation_type=r.relation_type,
-                        properties={"weight": r.weight},
-                        edge_id=r.id
-                    )
-                stats = in_memory_graph.get_stats()
-                logger.info(f"Loaded {stats['node_count']} nodes and {stats['edge_count']} relationships into in-memory graph.")
-        except Exception as e:
-            logger.warning(f"Could not preload in-memory graph from database: {e}")
+    try:
+        from app.database.database import AsyncSessionLocal
+        from app.models.entity import Entity, EntityRelationship
+        from app.graph.in_memory_graph import in_memory_graph
+        from sqlalchemy import select
+        
+        async with AsyncSessionLocal() as session:
+            ents = (await session.execute(select(Entity))).scalars().all()
+            for e in ents:
+                in_memory_graph.add_or_update_node(
+                    node_id=e.id,
+                    label=e.entity_type.capitalize(),
+                    properties={"value": e.value, "type": e.entity_type, "risk_score": e.risk_score}
+                )
+            rels = (await session.execute(select(EntityRelationship))).scalars().all()
+            for r in rels:
+                in_memory_graph.add_or_update_edge(
+                    source_id=r.source_entity_id,
+                    target_id=r.target_entity_id,
+                    relation_type=r.relation_type,
+                    properties={"weight": r.weight},
+                    edge_id=r.id
+                )
+            stats = in_memory_graph.get_stats()
+            logger.info(f"Loaded {stats['node_count']} nodes and {stats['edge_count']} relationships into in-memory graph.")
+    except Exception as e:
+        logger.warning(f"Could not preload in-memory graph from database: {e}")
 
     logger.info("ThreatGraph X Backend successfully initialized and ready for defense.")
     yield

@@ -114,11 +114,12 @@ class InMemoryGraphEngine:
         return SubGraph(nodes=nodes_list, edges=edges_list)
 
     def find_shortest_path(self, source_id: str, target_id: str) -> Optional[List[str]]:
-        """Finds shortest directed path between source and target."""
+        """Finds shortest undirected path between source and target (attack chains can be bidirectional)."""
         if not self.graph.has_node(source_id) or not self.graph.has_node(target_id):
             return None
         try:
-            return nx.shortest_path(self.graph, source=source_id, target=target_id)
+            undirected_graph = self.graph.to_undirected()
+            return nx.shortest_path(undirected_graph, source=source_id, target=target_id)
         except nx.NetworkXNoPath:
             return None
 

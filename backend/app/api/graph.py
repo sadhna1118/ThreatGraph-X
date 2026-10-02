@@ -25,7 +25,7 @@ async def get_attack_path(
     target_id: str = Query(..., description="Destination entity ID (e.g. 'file:c:/passwords.txt')")
 ):
     """Computes shortest directed attack path and reconstructs stage progression."""
-    path = graph_algorithms.detect_attack_path(source_id, target_id)
+    path = await graph_algorithms.detect_attack_path(source_id, target_id)
     if not path:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -19,15 +19,15 @@ class Settings(BaseSettings):
     CORS_ORIGINS: Union[str, List[str]] = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173"
 
     # Relational Database Settings
-    DATABASE_URL: str = "sqlite+aiosqlite:///./threatgraph_x.db"
-    POSTGRES_DATABASE_URL: str = "sqlite+aiosqlite:///./threatgraph_x.db"
-    POSTGRES_SYNC_DATABASE_URL: str = "sqlite:///./threatgraph_x.db"
+    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost/db"
+    POSTGRES_DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost/db"
+    POSTGRES_SYNC_DATABASE_URL: str = "postgresql://user:password@localhost/db?sslmode=require"
 
     # Graph Database Settings
-    NEO4J_URI: str = "bolt://localhost:7687"
+    NEO4J_URI: str = "neo4j+s://localhost"
     NEO4J_USERNAME: str = "neo4j"
-    NEO4J_PASSWORD: str = "placeholder_neo4j_password_change_in_production"
-    USE_IN_MEMORY_GRAPH: bool = True
+    NEO4J_PASSWORD: str = "password"
+    USE_IN_MEMORY_GRAPH: bool = False
 
     # Cache & Queues
     REDIS_URL: str = "redis://localhost:6379/0"
